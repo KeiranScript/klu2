@@ -34,7 +34,7 @@ async def upload_file(file: UploadFile = File(...)):
         f.write(content)
 
     # Update with your domain
-    file_url = f"https://your_domain.com/{random_filename}"
+    file_url = f"https://host.kuuichi.xyz/{random_filename}"
     return JSONResponse(content={"url": file_url})
 
 
@@ -48,7 +48,7 @@ async def serve_file(filename: str):
 
 if __name__ == "__main__":
     ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-    ssl_context.load_cert_chain(certfile="/etc/letsencrypt/live/your_domain.com/fullchain.pem",
-                                keyfile="/etc/letsencrypt/live/your_domain.com/privkey.pem")
+    ssl_context.load_cert_chain(certfile="/etc/letsencrypt/live/host.kuuichi.xyz/fullchain.pem",
+                                keyfile="/etc/letsencrypt/live/host.kuuichi.xyz/privkey.pem")
 
     uvicorn.run(app, host="0.0.0.0", port=443, ssl=ssl_context)
