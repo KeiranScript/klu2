@@ -1,8 +1,10 @@
 import os
 import random
 import string
+import ssl
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
+import uvicorn
 
 UPLOAD_DIR = "files"
 MAX_UPLOAD_SIZE = 1024 * 1024 * 1024
@@ -31,7 +33,8 @@ async def upload_file(file: UploadFile = File(...)):
         content = await file.read()
         f.write(content)
 
-    file_url = f"http://localhost:6969/{random_filename}"
+    # Update with your domain
+    file_url = f"https://your_domain.com/{random_filename}"
     return JSONResponse(content={"url": file_url})
 
 
@@ -44,5 +47,8 @@ async def serve_file(filename: str):
     raise HTTPException(status_code=404, detail="File not found")
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="localhost", port=6969)
+    ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    ssl_context.load_cert_chain(certfile="/etc/letsencrypt/live/your_domain.com/fullchain.pem",
+                                keyfile="/etc/letsencrypt/live/your_domain.com/privkey.pem")
+
+    uvicorn.run(app, host="0.0.0.0", port=443, ssl=ssl_context)
