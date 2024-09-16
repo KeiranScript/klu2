@@ -1,27 +1,12 @@
 import os
 import random
 import string
-import json
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 
 UPLOAD_DIR = "files"
 MAX_UPLOAD_SIZE = 1024 * 1024 * 1024
 
-
-def load_api_keys():
-    if not os.path.exists('json/keys.json'):
-        return {}
-    with open('json/keys.json') as f:
-        return json.load(f)
-
-
-def save_api_keys(api_keys):
-    with open('json/keys.json', 'w') as f:
-        json.dump(api_keys, f, indent=4)
-
-
-API_KEYS = load_api_keys()
 app = FastAPI()
 
 
