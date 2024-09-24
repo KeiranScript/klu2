@@ -1,15 +1,19 @@
 import os
 import random
 import string
-import ssl
+import jinja2
 from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 import uvicorn
 
 UPLOAD_DIR = "files"
 MAX_UPLOAD_SIZE = 1024 * 1024 * 1024
 
 app = FastAPI()
+
+app.mount("/templates", StaticFiles(directory="templates"), name="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 def generate_random_filename(extension: str) -> str:
@@ -38,6 +42,14 @@ async def upload_file(file: UploadFile = File(...)):
     return JSONResponse(content={"url": file_url})
 
 
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader("templates"))
+    template = env.get_template("index.html")
+    rendered_template = template.render()
+    return HTMLResponse(content=rendered_template)
+
+
 @app.get("/{filename}")
 async def serve_file(filename: str):
     file_path = os.path.join(UPLOAD_DIR, filename)
@@ -47,8 +59,4 @@ async def serve_file(filename: str):
     raise HTTPException(status_code=404, detail="File not found")
 
 if __name__ == "__main__":
-    ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-    ssl_context.load_cert_chain(certfile="/etc/letsencrypt/live/host.kuuichi.xyz/fullchain.pem",
-                                keyfile="/etc/letsencrypt/live/host.kuuichi.xyz/privkey.pem")
-
-    uvicorn.run(app, host="0.0.0.0", port=443, ssl=ssl_context)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
